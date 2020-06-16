@@ -22,4 +22,23 @@ class AuthProvider with ChangeNotifier {
 
     print(json.decode(response.body));
   }
+
+
+
+  // Untuk Login
+  Future<void> login(String email, String password) async {
+
+    const url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCjj3zdfJ_-fE9_48AomHK8RI8yLF6npho";
+
+    final response = await http.post(
+      url,
+      body: json.encode({
+        'email': email,
+        'password': password,
+        'returnSecureToken': true,
+      }),
+    );
+
+    print(json.decode(response.body));
+  }
 }
