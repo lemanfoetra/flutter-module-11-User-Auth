@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/http_exception.dart';
 import '../providers/auth_provider.dart';
 
 enum AuthMode { Signup, Login }
@@ -93,6 +94,8 @@ class AuthCard extends StatefulWidget {
 }
 
 class _AuthCardState extends State<AuthCard> {
+
+
   final GlobalKey<FormState> _formKey = GlobalKey();
   AuthMode _authMode = AuthMode.Login;
   Map<String, String> _authData = {
@@ -102,8 +105,11 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
+
+
+
   // Funtion submit
-  Future<void> _submit() async {
+  Future<void> _submit(BuildContext context) async {
     if (!_formKey.currentState.validate()) {
       // Invalid!
       return;
@@ -112,24 +118,56 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.Login) {
-      // Log user in
-      await Provider.of<AuthProvider>(context, listen: false).login(
-        _authData['email'],
-        _authData['password'],
-      );
-    } else {
-      // Sign user up
-      await Provider.of<AuthProvider>(context, listen: false).singnup(
-        _authData['email'],
-        _authData['password'],
-      );
+    try {
+      if (_authMode == AuthMode.Login) {
+        // Log user in
+        await Provider.of<AuthProvider>(context, listen: false).login(
+          _authData['email'],
+          _authData['password'],
+        );
+      } else {
+        // Sign user up
+        await Provider.of<AuthProvider>(context, listen: false).singnup(
+          _authData['email'],
+          _authData['password'],
+        );
+      }
+    } on HttpException catch(error){
+
+      // Error login
+      var errorMessage = "Auth failed.";
+      if(error.toString() == "EMAIL_NOT_FOUND"){
+        errorMessage = "Email Tidak terdaftar";
+      }else if(error.toString() == "INVALID_PASSWORD"){
+        errorMessage = "Password Salah";
+      }else if(error.toString() == "USER_DISABLED"){
+        errorMessage = "User disabled";
+      }
+
+
+      // Error signup
+      if(error.toString() == "EMAIL_EXISTS"){
+        errorMessage = "Email telah didaftarkan";
+      }else if(error.toString() == "OPERATION_NOT_ALLOWED"){
+        errorMessage = "Operasi tidak boleh dilakukan";
+      }else if(error.toString() == "TOO_MANY_ATTEMPTS_TRY_LATER"){
+        errorMessage = "Terlalu banyak mencoba. Silahkan ulangi beberapa saat lagi";
+      }
+      _alertAuth(context, errorMessage );
+
+
+    } catch (error) {
+      _alertAuth(context, error.toString());
     }
     setState(() {
       _isLoading = false;
     });
   }
 
+
+
+
+  // switch mode login / signup
   void _switchAuthMode() {
     if (_authMode == AuthMode.Login) {
       setState(() {
@@ -140,6 +178,12 @@ class _AuthCardState extends State<AuthCard> {
         _authMode = AuthMode.Login;
       });
     }
+  }
+
+
+  // jika ada error saat auth
+  void _alertAuth(BuildContext context, String message){
+    Scaffold.of(context).showSnackBar(SnackBar(content: Text(message),));
   }
 
   @override
@@ -208,7 +252,9 @@ class _AuthCardState extends State<AuthCard> {
                   RaisedButton(
                     child:
                         Text(_authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP'),
-                    onPressed: _submit,
+                    onPressed: (){
+                      _submit(context);
+                    } ,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
