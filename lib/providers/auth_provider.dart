@@ -5,6 +5,41 @@ import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
 
 class AuthProvider with ChangeNotifier {
+
+  String _localId;
+  String _idToken;
+  DateTime _expiresIn;
+
+
+  // Untuk pengecekan apakah sudah/masih auth atau tidak
+  bool get isAuth{
+    if(_notExpiresToken){
+      return true;
+    }
+    return false;
+  }
+
+
+   // Untuk pengecekan apakah apakah token masih berlaku atau tidak
+  bool get _notExpiresToken{
+    if(_expiresIn != null && _idToken != null){
+      if(DateTime.now().isBefore(_expiresIn)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+  // Mendapatkan id token
+  String get idToken{
+    if(_notExpiresToken){
+      return _idToken;
+    }
+    return null;
+  }
+
+
   // Untuk daftar pengguna baru
   Future<void> singnup(String email, String password) async {
     const url =
@@ -53,8 +88,16 @@ class AuthProvider with ChangeNotifier {
         throw HttpException(responseData['error']['message']);
       }
 
+      _idToken = responseData['idToken'];
+      _expiresIn = DateTime.now().add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      _localId = responseData['localId'];
+      notifyListeners();
+
     } catch (error) {
       throw error;
     }
   }
+
+
+
 }
