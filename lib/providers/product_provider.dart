@@ -49,7 +49,7 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     // contoh melakukan post request
-    const url = "https://flutter-shopapps.firebaseio.com/product.json";
+    final url = "https://flutter-shopapps.firebaseio.com/product.json?auth=$authToken";
 
     try {
       final response = await http.post(
@@ -86,7 +86,7 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> editProduct(String id, Product product) async {
     if (id != null) {
-      final url = "https://flutter-shopapps.firebaseio.com/product/$id.json";
+      final url = "https://flutter-shopapps.firebaseio.com/product/$id.json?auth=$authToken";
       await http.patch(
         url,
         body: json.encode({
@@ -104,7 +104,7 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     try {
-      final url = "https://flutter-shopapps.firebaseio.com/product/$id.json";
+      final url = "https://flutter-shopapps.firebaseio.com/product/$id.json?auth=$authToken";
       final response = await http.delete(url);
       if (response.statusCode >= 400) {
         throw "Deleting failed, code : ${response.statusCode}";

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/chart_provider.dart';
 import '../screens/product_detail_screen.dart';
 import '../providers/product.dart';
+import '../providers/auth_provider.dart';
 
 class ProductItem extends StatelessWidget {
   // final String id;
@@ -15,6 +16,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final dataProduct = Provider.of<Product>(context, listen: false);
     final dataChart = Provider.of<ChartProvider>(context, listen: false);
+    final authObj   = Provider.of<AuthProvider>(context, listen: false);
     final objScaffold = Scaffold.of(context);
 
     return InkWell(
@@ -51,7 +53,7 @@ class ProductItem extends StatelessWidget {
                 ),
                 onPressed: () async {
                   try {
-                    await dataProduct.setFavorite();
+                    await dataProduct.setFavorite(authObj.idToken);
                   } catch (error) {
                     objScaffold.showSnackBar(
                       SnackBar(
