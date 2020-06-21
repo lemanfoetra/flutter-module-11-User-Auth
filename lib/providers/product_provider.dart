@@ -21,9 +21,14 @@ class ProductsProvider with ChangeNotifier {
   }
 
   // GET DATA DARI FIREBASE
-  Future<void> getListProduct() async {
+  Future<void> getListProduct([bool filterUser = false]) async {
+
+    String strFilter = "";
+    if(filterUser){
+      strFilter = '&orderBy="creatorId"&equalTo="$userId"';
+    }
     String url =
-        "https://flutter-shopapps.firebaseio.com/product.json?auth=$authToken";
+        "https://flutter-shopapps.firebaseio.com/product.json?auth=$authToken$strFilter";
 
     try {
 
@@ -39,7 +44,6 @@ class ProductsProvider with ChangeNotifier {
       List<Product> newData = [];
       if (ekstrakData != null) {
         ekstrakData.forEach((key, value) {
-          print(key);
           newData.add(Product(
             id: key,
             description: value['description'],
@@ -69,6 +73,7 @@ class ProductsProvider with ChangeNotifier {
           'description': product.description,
           'price': product.price,
           'imageUrl': product.imageUrl,
+          'creatorId': userId,
         }),
       );
 
@@ -128,6 +133,6 @@ class ProductsProvider with ChangeNotifier {
 
   void bersihkanItems() {
     _items = [];
-    notifyListeners();
+    //notifyListeners();
   }
 }
