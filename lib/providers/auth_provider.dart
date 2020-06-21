@@ -11,6 +11,12 @@ class AuthProvider with ChangeNotifier {
   DateTime _expiresIn;
 
 
+  // Untuk idUser
+  String get idUser {
+    return _localId;
+  }
+
+
 
   // Untuk pengecekan apakah sudah/masih auth atau tidak
   bool get isAuth{

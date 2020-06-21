@@ -20,7 +20,7 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  Future<void> setFavorite(String authToken) async {
+  Future<void> setFavorite(String authToken, String userId) async {
     bool oldFavorite = isFavorite;
     bool newStsFavorite = !isFavorite;
     try {
@@ -29,7 +29,7 @@ class Product with ChangeNotifier {
       notifyListeners();
 
       // update isFavorite di server
-      final url = "https://flutter-shopapps.firebaseio.com/product/$id.json?auth=$authToken";
+      final url = "https://flutter-shopapps.firebaseio.com/productFavorite/$userId/$id.json?auth=$authToken";
       final response = await http.patch(
         url,
         body: json.encode({

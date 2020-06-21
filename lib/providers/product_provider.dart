@@ -6,10 +6,11 @@ import './product.dart';
 
 class ProductsProvider with ChangeNotifier {
   final String authToken;
+  final String userId;
   List<Product> _items = [];
 
   // construct
-  ProductsProvider(this.authToken);
+  ProductsProvider(this.authToken, this.userId);
 
   List<Product> get items {
     return [..._items];
@@ -21,22 +22,31 @@ class ProductsProvider with ChangeNotifier {
 
   // GET DATA DARI FIREBASE
   Future<void> getListProduct() async {
-    final url =
+    String url =
         "https://flutter-shopapps.firebaseio.com/product.json?auth=$authToken";
 
     try {
+
+      // Mengambil data product
       final response = await http.get(url);
       final ekstrakData = json.decode(response.body) as Map<String, dynamic>;
+
+      // mengambil data user favoriteStatus berdasarkan userId
+      url = "https://flutter-shopapps.firebaseio.com/productFavorite/$userId.json?auth=$authToken";
+      final responseSfavorite = await http.get(url);
+      final dataStatusFavorite = json.decode(responseSfavorite.body) as Map<String, dynamic>;
+
       List<Product> newData = [];
       if (ekstrakData != null) {
         ekstrakData.forEach((key, value) {
+          print(key);
           newData.add(Product(
             id: key,
             description: value['description'],
             imageUrl: value['imageUrl'],
             price: value['price'],
             title: value['title'],
-            isFavorite: value['isFavorite'],
+            isFavorite: (dataStatusFavorite == null) ? false : (dataStatusFavorite[key] == null) ? false : dataStatusFavorite[key]['isFavorite'],
           ));
         });
       }
@@ -59,7 +69,6 @@ class ProductsProvider with ChangeNotifier {
           'description': product.description,
           'price': product.price,
           'imageUrl': product.imageUrl,
-          'isFavorite': product.isFavorite,
         }),
       );
 
