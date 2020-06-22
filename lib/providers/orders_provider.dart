@@ -18,46 +18,49 @@ class OrderItem {
 }
 
 class OrdersProvider with ChangeNotifier {
-
+  final String userId;
   final String authToken;
   List<OrderItem> _order = [];
 
   // construct
-  OrdersProvider(this.authToken);
-
+  OrdersProvider(this.authToken, this.userId);
 
   List<OrderItem> get order {
     return [..._order];
   }
 
   Future<void> getOrderData() async {
-    final url = "https://flutter-shopapps.firebaseio.com/orders.json?auth=$authToken";
+    final url =
+        "https://flutter-shopapps.firebaseio.com/orders/$userId.json?auth=$authToken";
     final List<OrderItem> orderLoaded = [];
     final response = await http.get(url);
     final extraxData = json.decode(response.body) as Map<String, dynamic>;
-    extraxData.forEach((key, value) {
-      orderLoaded.add(OrderItem(
-        id: key,
-        amount: value['amount'],
-        time: DateTime.parse(value['time']),
-        chartItem: (value['chartItem'] as List<dynamic>)
-            .map(
-              (isi) => ChartItem(
-                  id: isi['id'],
-                  title: isi['title'],
-                  quantity: isi['quantity'],
-                  price: isi['price']),
-            )
-            .toList(),
-      ));
-    });
+    if (extraxData != null) {
+      extraxData.forEach((key, value) {
+        orderLoaded.add(OrderItem(
+          id: key,
+          amount: value['amount'],
+          time: DateTime.parse(value['time']),
+          chartItem: (value['chartItem'] as List<dynamic>)
+              .map(
+                (isi) => ChartItem(
+                    id: isi['id'],
+                    title: isi['title'],
+                    quantity: isi['quantity'],
+                    price: isi['price']),
+              )
+              .toList(),
+        ));
+      });
+    }
 
     _order = orderLoaded;
     notifyListeners();
   }
 
   Future<void> addOrder(List<ChartItem> chartItem, double total) async {
-    final url = "https://flutter-shopapps.firebaseio.com/orders.json?auth=$authToken";
+    final url =
+        "https://flutter-shopapps.firebaseio.com/orders/$userId.json?auth=$authToken";
     final timestamp = DateTime.now();
     final response = await http.post(
       url,
