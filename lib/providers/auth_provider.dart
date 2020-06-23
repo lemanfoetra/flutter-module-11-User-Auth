@@ -107,4 +107,13 @@ class AuthProvider with ChangeNotifier {
 
 
 
+  // funtion untuk keluar login
+  void logout(){
+    _idToken = null;
+    _localId = null;
+    _expiresIn = null;
+    notifyListeners();
+  }
+
+
 }
