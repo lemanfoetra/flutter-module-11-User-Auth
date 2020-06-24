@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
@@ -9,6 +10,7 @@ class AuthProvider with ChangeNotifier {
   String _localId;
   String _idToken;
   DateTime _expiresIn;
+  Timer _authTimer;
 
 
   // Untuk idUser
@@ -98,6 +100,9 @@ class AuthProvider with ChangeNotifier {
       _idToken = responseData['idToken'];
       _expiresIn = DateTime.now().add(Duration(seconds: int.parse(responseData['expiresIn'])));
       _localId = responseData['localId'];
+
+      // auto logout jika telah melewati expiresIn
+      _autoLogout();
       notifyListeners();
 
     } catch (error) {
@@ -112,8 +117,27 @@ class AuthProvider with ChangeNotifier {
     _idToken = null;
     _localId = null;
     _expiresIn = null;
+
+    if(_authTimer != null){
+      _authTimer.cancel();
+      _authTimer = null;
+    }
+
     notifyListeners();
   }
 
+
+
+
+  // Untuk auto logout ketika waktu expiresIn telah habis
+  void _autoLogout(){
+
+    if(_authTimer != null){
+      _authTimer.cancel();
+    }
+
+    final timeToExpary = _expiresIn.difference(DateTime.now()).inSeconds;
+    _authTimer = Timer(Duration(seconds: timeToExpary), ()=> logout() );
+  }
 
 }
