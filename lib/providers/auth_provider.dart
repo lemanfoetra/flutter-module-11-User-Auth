@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/http_exception.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -105,6 +107,16 @@ class AuthProvider with ChangeNotifier {
       _autoLogout();
       notifyListeners();
 
+
+      // menyimpan data login ke shared_prefences
+      final shpre = await SharedPreferences.getInstance();
+      final dataAuth = json.encode({
+        'idToken' : _idToken,
+        'localId' : _localId,
+        'expiresIn' : _expiresIn.toIso8601String(),
+      });
+      shpre.setString('dataAuth', dataAuth);
+
     } catch (error) {
       throw error;
     }
@@ -140,4 +152,21 @@ class AuthProvider with ChangeNotifier {
     _authTimer = Timer(Duration(seconds: timeToExpary), ()=> logout() );
   }
 
+
+  Future<bool> tryAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if(prefs.getString('dataAuth') != null){
+      final dataAuth = json.decode(prefs.getString('dataAuth')) as Map<String, dynamic>;
+      final expiresIn = DateTime.parse(dataAuth['expiresIn']);
+      if(DateTime.now().isBefore(expiresIn)){
+        _idToken = dataAuth['idToken'];
+        _localId = dataAuth['localId'];
+        _expiresIn = expiresIn;
+        
+        notifyListeners();
+        return true;
+      }
+    }
+    return false;
+  }
 }

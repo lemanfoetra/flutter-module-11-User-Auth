@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    print('build');
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
           create: null,
           update: (ctx, authObj, productObj) =>
               ProductsProvider(authObj.idToken, authObj.idUser),
+          
         ),
         ChangeNotifierProvider.value(
           value: ChartProvider(),
@@ -46,7 +48,32 @@ class MyApp extends StatelessWidget {
           ),
           initialRoute: '/',
           routes: {
-            '/': (ctx) => auth.isAuth ? ProductOverviewScreeen() : AuthScreen(),
+            '/': (ctx) {
+              // ketika auth valid dia langsung membuak OverviewScreen()
+              if (auth.isAuth) {
+                print('consumer');
+                return ProductOverviewScreeen();
+              } else {
+                //
+                return FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (ctx, snapshot) {
+                    print('future builder');
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (snapshot.error != null) {
+                      return Center(
+                        child: Text('Terjadi kesalahan'),
+                      );
+                    } else {
+                      return AuthScreen();
+                    }
+                  },
+                );
+              }
+            },
             ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
             CartScreen.routeName: (ctx) => CartScreen(),
             OrdersScreeen.routeName: (ctx) => OrdersScreeen(),

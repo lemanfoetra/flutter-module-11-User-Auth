@@ -41,6 +41,10 @@ class ProductsProvider with ChangeNotifier {
       final responseSfavorite = await http.get(url);
       final dataStatusFavorite = json.decode(responseSfavorite.body) as Map<String, dynamic>;
 
+      if(dataStatusFavorite['error'] != null){
+        throw dataStatusFavorite['error'];
+      }
+
       List<Product> newData = [];
       if (ekstrakData != null) {
         ekstrakData.forEach((key, value) {
