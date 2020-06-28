@@ -16,7 +16,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final dataProduct = Provider.of<Product>(context, listen: false);
     final dataChart = Provider.of<ChartProvider>(context, listen: false);
-    final authObj   = Provider.of<AuthProvider>(context, listen: false);
+    final authObj = Provider.of<AuthProvider>(context, listen: false);
     final objScaffold = Scaffold.of(context);
 
     return InkWell(
@@ -40,6 +40,18 @@ class ProductItem extends StatelessWidget {
               ),
               child: Image.network(
                 dataProduct.imageUrl,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes
+                          : null,
+                    ),
+                  );
+                },
                 fit: BoxFit.cover,
               ),
             ),
@@ -53,7 +65,8 @@ class ProductItem extends StatelessWidget {
                 ),
                 onPressed: () async {
                   try {
-                    await dataProduct.setFavorite(authObj.idToken, authObj.idUser);
+                    await dataProduct.setFavorite(
+                        authObj.idToken, authObj.idUser);
                   } catch (error) {
                     objScaffold.showSnackBar(
                       SnackBar(

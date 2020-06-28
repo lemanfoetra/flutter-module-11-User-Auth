@@ -126,7 +126,7 @@ class AuthProvider with ChangeNotifier {
 
 
   // funtion untuk keluar login
-  void logout(){
+  Future<void> logout() async {
     _idToken = null;
     _localId = null;
     _expiresIn = null;
@@ -135,6 +135,10 @@ class AuthProvider with ChangeNotifier {
       _authTimer.cancel();
       _authTimer = null;
     }
+
+    // mengahapus semua data sharederefences
+    final sf = await SharedPreferences.getInstance();
+    sf.clear();
 
     notifyListeners();
   }
